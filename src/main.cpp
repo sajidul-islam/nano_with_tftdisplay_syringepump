@@ -125,12 +125,23 @@ void Sinusoidal_function()
   stepper1.runSpeed();
   static unsigned long lastMillis = 0;
   unsigned long currentMillis = millis();
-  if (currentMillis - lastMillis >= 50) 
+  
+  if(digitalRead(home_switch1) ==1)
   {
-    lastMillis = currentMillis;
-    dataIndex = (dataIndex + 1) % (sizeof(sinusoidal) / sizeof(sinusoidal[0]));
-    stepper1.setSpeed(sinusoidal[dataIndex]*3);
-  }  
+    if (currentMillis - lastMillis >= 50) 
+        {
+          lastMillis = currentMillis;
+          dataIndex = (dataIndex + 1) % (sizeof(sinusoidal) / sizeof(sinusoidal[0]));
+          stepper1.setSpeed(sinusoidal[dataIndex]*3);
+        } 
+
+  }
+  if (digitalRead(home_switch1) ==0)
+  {
+    stepper1.setSpeed(0);
+  }
+  
+   
 
 }
 
