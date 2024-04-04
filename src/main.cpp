@@ -19,7 +19,7 @@
 #define x_step_pin 6   
 #define x_dir_pin 5
 
-
+int state = 1;
 
 AccelStepper stepper1(1, x_step_pin, x_dir_pin); 
 
@@ -28,7 +28,7 @@ TFT screen = TFT(CS, DC, RST);
 
 ////////////////Variables to manage menu state/////////////////////
 int currentMenuOption = 1;
-const int totalMenuOptions = 3;
+const int totalMenuOptions = 8;
 int currentmode = 0;
 
 bool homing = false;
@@ -49,7 +49,7 @@ void Sinusoidal_function();
 void blink();
 void executeMenuOption(int option) ;
 void go_tohome_position();
-void sisusoidal_movement();
+void sinusoidal_movement();
 
 ////////////////////////////////////////
 
@@ -59,7 +59,7 @@ void updateMenuDisplay()
   screen.text("Syringe Pump Menu", 40, 5);
   screen.text("________________________________________________________", 0, 10);
   screen.setTextSize(1);
-  String menuItems[totalMenuOptions] = {"1. Home Position", "2. Sinusoidal","4. Custome"};
+  String menuItems[totalMenuOptions] = {"1. Home Position", "2. Sinusoidal","3. 50","4. 100","5. 150","6. 200","7. 250""3. 50""3. 50"};
   for (int i = 0; i < totalMenuOptions; i++) {
     if (i == (currentMenuOption - 1)) {
       screen.stroke(255, 0, 0); // Highlight the selected menu item in red
@@ -118,8 +118,8 @@ void Sinusoidal_function()
 
 
 
-
-  void sisusoidal_movement()
+/*
+void sisusoidal_movement()
 { 
   homing =  false;
   stepper1.runSpeed();
@@ -141,10 +141,31 @@ void Sinusoidal_function()
     stepper1.setSpeed(0);
   }
   
-   
-
 }
+*/
 
+
+void sinusoidal_movement() { 
+  homing = false;
+  stepper1.runSpeed();
+  static unsigned long lastMillis = 0;
+  unsigned long currentMillis = millis();
+
+  if(digitalRead(home_switch1) == LOW) {
+    state = -1; 
+  }
+
+  
+  if(digitalRead(home_switch2) == LOW) {
+    state = 1; 
+  }
+
+  if (currentMillis - lastMillis >= 50) {
+    lastMillis = currentMillis;
+    dataIndex = (dataIndex + 1) % (sizeof(sinusoidal) / sizeof(sinusoidal[0]));
+    stepper1.setSpeed(state * sinusoidal[dataIndex] * 3);
+  }
+}
 
 void executeMenuOption(int option) 
 {
@@ -171,6 +192,9 @@ void executeMenuOption(int option)
 
 void setup() {
   // Initialize the display
+
+  Serial.begin(9600);
+  //Serial.println("hello");
   screen.begin();
   screen.background(0, 0, 0);
   screen.stroke(255, 255, 255);
@@ -190,7 +214,7 @@ void setup() {
   stepper1.setMaxSpeed(3000);
   // Display the initial menu
   updateMenuDisplay();
-  Serial.begin(9600);
+  
 }
 
 void loop() 
@@ -222,8 +246,8 @@ void loop()
 
   if (currentmode ==2)
   {
-    blink();
-    sisusoidal_movement();
+    //blink();
+    sinusoidal_movement();
   }
 
 }
